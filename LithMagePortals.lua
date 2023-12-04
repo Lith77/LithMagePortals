@@ -12,10 +12,10 @@ local teleportButtons = {}
 local portalButtons = {}
 local knownTeleportButtons = {}
 local knownPortalButtons = {}
+local knownTeleports = false;
+local knownPortals = false;
 local colorR, colorG, colorB = GetClassColor("MAGE");
 
---local function loadTeleports()
---    return {
 local teleportSpells = {
         ["Teleport_Stormwind"] = 3561,
         ["Teleport_Ironforge"] = 3562,
@@ -28,10 +28,7 @@ local teleportSpells = {
         ["Teleport_Shattrath"] = 35715,
         ["Teleport_Dalaran"] = 53140,
     }
---end
 
---local function loadPortals()
---    return 
 local portalSpells = {
         ["Portal_Stormwind"] = 10059,
         ["Portal_Ironforge"] = 11416,
@@ -44,9 +41,6 @@ local portalSpells = {
         ["Portal_Shattrath"] = 35717,
         ["Portal_Dalaran"] = 53142,
     }
---end
---local teleportSpells = loadTeleports()
---local portalSpells = loadPortals()
 
 -- Function to create a teleport button
 local function CreateTeleportButton(name, spellID)
@@ -143,7 +137,6 @@ local function CreateAllPortalButtons()
         table.insert(portalButtons, button)
     end
 end
-local knownTeleports = false;
 -- Function to show/hide teleport buttons based on known spells
 local function UpdateTeleportButtons()
     local numRows = 3  -- Number of rows in the grid
@@ -162,10 +155,9 @@ local function UpdateTeleportButtons()
             button:SetPoint("TOPLEFT", TeleportFrame, "TOPLEFT", col * (buttonSize + buttonSpacing) +5, -row * (buttonSize + buttonSpacing) -8)
             button:Show()
             shownButtons = shownButtons + 1
-            knownPortals = true;
+            knownTeleports = true;
         else
             button:Hide()
-            print("Hide teleport button:", button:GetName())
         end
     end
     -- Calculate the frame size based on the number of shown buttons
@@ -176,7 +168,6 @@ local function UpdateTeleportButtons()
     TeleportFrame:SetSize(frameWidth, frameHeight)
 end
 
-local knownPortals = false;
 -- Function to show/hide portal buttons based on known spells
 local function UpdatePortalButtons()
     local numRows = 3  -- Number of rows in the grid
@@ -387,9 +378,6 @@ LithMagePortalsFrame:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
 end)
 
--- Show the LithMagePortalsFrame by default
-LithMagePortalsFrame:Show()
-
 -- Register for the "LEARNED_SPELL_IN_TAB" event to handle newly learned spells
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
@@ -410,6 +398,7 @@ loginFrame:RegisterEvent("PLAYER_LOGIN")
 loginFrame:SetScript("OnEvent", function(self, event)
     UpdateTeleportButtons()
     UpdatePortalButtons()
+    print("knownPortals", knownPortals, "knownTeleports", knownTeleports)
     if not (knownPortals and knownTeleports) then
         LithMagePortalsFrame:Hide()
     else
