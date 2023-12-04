@@ -1,0 +1,10 @@
+## Title: Lith|cff69CCF0Mage|rPortals
+## Notes: A little frame for your portals
+## Author: Lith
+## Version: 1.0
+## Interface: 11500
+## Interface: 30403
+## X-Category: Custom
+## X-Category-Sub: Mage Utilities
+
+LithMagePortals.lua
