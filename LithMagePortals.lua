@@ -1,4 +1,5 @@
 -- Author: Lith
+-- Description: A little frame for your portals
 local playerClass = select(2, UnitClass("player"))
 
 if playerClass ~= "MAGE" then
