@@ -3,7 +3,7 @@
 local playerClass = select(2, UnitClass("player"))
 
 if playerClass ~= "MAGE" then
-    print("|cFF69CCF0Lith Mage portals: |cFFBCCF02is a Mage only addon, |cFFF0563Dnot loaded")
+    print("|cFF8000FFLith|r Mage portals: |cFFBCCF02is a Mage only addon, |cFFF0563Dnot loaded")
     return;
 end
 local LithMagePortalsFrame
@@ -24,24 +24,66 @@ local teleportSpells = {
         ["Teleport_Exodar"] = 32271,
         ["Teleport_Orgrimmar"] = 3567,
         ["Teleport_Undercity"] = 3563,
-        ["Teleport_Thunder Bluff"] = 3566,
-        ["Teleport_Silvermoon"] = 32266,
-        ["Teleport_Shattrath"] = 35715,
+        ["Teleport_Thunder_Bluff"] = 3566,
+        ["Teleport_Silvermoon"] = 32272,
+        ["Teleport_Shattrath_A"] = 33690, -- Alliance
+        ["Teleport_Shattrath_H"] = 35715, -- Hord
+        ["Teleport_Theramore"] = 49359,
+        ["Teleport_Stonard"] = 49358,
         ["Teleport_Dalaran"] = 53140,
+        ["Teleport_Tol Barad_A"] = 88342, -- Alliance
+        ["Teleport_Tol Barad_H"] = 88344, -- Hord
     }
 
 local portalSpells = {
         ["Portal_Stormwind"] = 10059,
         ["Portal_Ironforge"] = 11416,
-        ["Portal_Darnassus"] = 32266,
-        ["Portal_Exodar"] = 32267,
+        ["Portal_Darnassus"] = 11419,
+        ["Portal_Exodar"] = 32266,
         ["Portal_Orgrimmar"] = 11417,
         ["Portal_Undercity"] = 11418,
-        ["Portal_Thunder Bluff"] = 11420,
-        ["Portal_Silvermoon"] = 32271,
-        ["Portal_Shattrath"] = 35717,
+        ["Portal_Thunder_Bluff"] = 11420,
+        ["Portal_Silvermoon"] = 32267,
+        ["Portal_Shattrath_A"] = 33691, -- Alliance
+        ["Portal_Shattrath_H"] = 35717, -- Hord
+        ["Portal_Theramore"] = 49360,
+        ["Portal_Stonard"] = 49361,
         ["Portal_Dalaran"] = 53142,
+        ["Portal_Tol Barad_A"] = 88345, -- Alliance
+        ["Portal_Tol Barad_H"] = 88346, -- Hord
     }
+
+-- Rune IDs
+local RUNE_OF_TELEPORTATION_ID = 17031
+local RUNE_OF_PORTALS_ID = 17032
+
+local function CountRunes(runeID)
+    local count = 0
+    for bag = 0, 4 do
+        for slot = 1, C_Container.GetContainerNumSlots(bag) do
+            local itemInfo = C_Container.GetContainerItemInfo(bag, slot)
+            if itemInfo and itemInfo.itemID == runeID then
+                count = count + (itemInfo.stackCount or 1)
+            end
+        end
+    end
+    return count
+end
+
+local function UpdateRuneCount(button, runeID)
+    local count = CountRunes(runeID)
+    if button.runeCount then
+        button.runeCount:SetText(count)
+        if count == 0 then
+            button.runeCount:SetTextColor(1, 0, 0) -- Red color for 0 runes
+        else
+            button.runeCount:SetTextColor(1, 1, 1) -- White color for non-zero runes
+        end
+    end
+end
+
+print("No of Teleportation runes:", CountRunes(RUNE_OF_TELEPORTATION_ID))
+print("No of Portal runes:", CountRunes(RUNE_OF_PORTALS_ID))
 
 -- Function to create a teleport button
 local function CreateTeleportButton(name, spellID)
@@ -331,6 +373,11 @@ teleportButton:SetSize(30, 30)
 teleportButton:SetPoint("LEFT", 5, -2)
 teleportButton:SetNormalTexture("Interface\\Icons\\Spell_Arcane_TeleportStormwind")
 teleportButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
+-- Add rune count text
+teleportButton.runeCount = teleportButton:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+teleportButton.runeCount:SetPoint("BOTTOMRIGHT", 2, -2)
+teleportButton.runeCount:SetTextColor(1, 1, 1)
+
 teleportButton:SetScript("OnClick", function()
     ToggleTeleportFrame()
 end)
@@ -338,6 +385,7 @@ end)
 teleportButton:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP")
     GameTooltip:SetText("Teleports") -- Set the tooltip text
+    GameTooltip:AddLine("Runes: " .. CountRunes(RUNE_OF_TELEPORTATION_ID))
     GameTooltip:Show()
 end)
 
@@ -351,6 +399,12 @@ portalButton:SetSize(30, 30)
 portalButton:SetPoint("RIGHT", -5, -2)
 portalButton:SetNormalTexture("Interface\\Icons\\Spell_Arcane_PortalStormwind")
 portalButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
+
+-- Add rune count text
+portalButton.runeCount = portalButton:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+portalButton.runeCount:SetPoint("BOTTOMRIGHT", 2, -2)
+portalButton.runeCount:SetTextColor(1, 1, 1)
+
 portalButton:SetScript("OnClick", function()
     TogglePortalFrame()
 end)
@@ -358,6 +412,7 @@ end)
 portalButton:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP")
     GameTooltip:SetText("Portals") -- Set the tooltip text
+    GameTooltip:AddLine("Runes: " .. CountRunes(RUNE_OF_PORTALS_ID))
     GameTooltip:Show()
 end)
 
@@ -379,6 +434,16 @@ LithMagePortalsFrame:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
 end)
 
+
+-- Function to update both button rune counts
+local function UpdateAllRuneCounts()
+    UpdateRuneCount(teleportButton, RUNE_OF_TELEPORTATION_ID)
+    UpdateRuneCount(portalButton, RUNE_OF_PORTALS_ID)
+end
+
+-- Initial update of rune counts
+UpdateAllRuneCounts()
+
 -- Register for the "LEARNED_SPELL_IN_TAB" event to handle newly learned spells
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
@@ -392,6 +457,12 @@ eventFrame:SetScript("OnEvent", function(self, event, tabIndex, spellID)
         LithMagePortalsFrame:Show()
     end
 
+end)
+
+local eventFrameBagUpdate = CreateFrame("Frame")
+eventFrameBagUpdate:RegisterEvent("BAG_UPDATE")
+eventFrameBagUpdate:SetScript("OnEvent", function(self, event)
+    UpdateAllRuneCounts()
 end)
 
 local loginFrame = CreateFrame("Frame")
